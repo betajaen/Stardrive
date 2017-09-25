@@ -16,7 +16,7 @@ int main()
   fs[2] = 7;
   fs[3] = 8;
 
-  DoSomething(m.GetElements())
+  DoSomething(m.GetData())
 }
 ```
 
