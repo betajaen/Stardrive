@@ -27,6 +27,7 @@
 #define STARDRIVE_H
 
 #include <stdint.h>
+#include <float.h>
 #include <assert.h>
 #include <new>
 
@@ -42,14 +43,14 @@
 //! Cheat Sheet:
 //! 
 //! SArchitecture       -- Compiler Architecture [32 or 64]
-//! SIsDebug            -- Is this the Debug Build? [0  or 1]
-//! SIsRelease          -- Is this the Release Build? [0  or 1]
-//! SIsWindows          -- Is this Microsoft Windows? [0  or 1]
-//! SIsApple            -- Is this macOS or iOS? [0  or 1]
-//! SIsLinux            -- Is this Linux? [0  or 1]
+//! SIsDebug            -- Is this the Debug Build? [0 or 1]
+//! SIsRelease          -- Is this the Release Build? [0 or 1]
+//! SIsWindows          -- Is this Microsoft Windows? [0 or 1]
+//! SIsApple            -- Is this macOS or iOS? [0 or 1]
+//! SIsLinux            -- Is this Linux? [0 or 1]
 //! SIsVisualStudio     -- Is this Visual Studio Compiler and what version? [2017, 2015, 1, 0]
-//! SIsClang            -- Is this the Clang Compiler? [0  or 1]
-//! SIsGcc              -- Is this the GCC Compiler? [0  or 1]
+//! SIsClang            -- Is this the Clang Compiler? [0 or 1]
+//! SIsGcc              -- Is this the GCC Compiler? [0 or 1]
 //! SToStr              -- Turn given argument to string literal
 //! SAssert             -- Assert based upon condition and give reason
 //! SEnsure             -- Ensure given argument is valid and assert otherwise
@@ -151,16 +152,26 @@
 #define SRegionDoc(...)
 
 
-//! Plain Old Data
+//! Plain Old Data and Number-likes
 //! https://github.com/betajaen/Stardrive/blob/master/Documentation/plain-old-data.md
 //! 
 //! Cheat Sheet:
 //! 
-//! Integers -- uinteger (size_t), integer (intptr_t)
-//! Numbers  -- unsigned: u8, u16, u32, u64  signed: i8, i16, i32, i64
-//! Floats   -- f32, f64
-//! Boolean  -- bool, b32
-//! Char     -- char8
+//! Integers                    -- uinteger (size_t), integer (intptr_t)
+//! Numbers                     -- unsigned: u8, u16, u32, u64  signed: i8, i16, i32, i64
+//! Floats                      -- f32, f64
+//! Boolean                     -- bool, b32
+//! Char                        -- char8
+//!
+//! Traits and Ops:             -- Type Traits/Operations, can be overriden (see Vector)
+//! 
+//! traits::MinMax<T>::Min      -- Minimum value
+//! traits::MinMax<T>::Max      -- Maximum value
+//! traits::IsSigned<T>::Value  -- Is the type signed
+//! ops::Arithmetic<T>          -- Arithmetic functions (Add, Sub, Mul, Div)
+//! ops::Equality<T>            -- Equality functions (Equals, NotEquals, ...)
+//! numeric<T>                  -- All traits + ops in one class, acting as a 'templated namespace'
+
 namespace Stardrive {
 
   typedef size_t    uinteger; SCompilerAssert(sizeof(uinteger) == (SArchitecture / 8), "Uninteger is expected to match register size");
@@ -202,15 +213,129 @@ namespace Stardrive {
   #define SFloat              float
   #define SDouble             double
 
-  template<typename T> struct numeric {};
-  template<> struct numeric<u8>  { static const u8  Max = UINT8_MAX,  Min = 0;         };
-  template<> struct numeric<u16> { static const u16 Max = UINT16_MAX, Min = 0;         };
-  template<> struct numeric<u32> { static const u32 Max = UINT32_MAX, Min = 0;         };
-  template<> struct numeric<u64> { static const u64 Max = UINT64_MAX, Min = 0;         };
-  template<> struct numeric<i8>  { static const i8  Max = INT8_MAX,   Min = INT8_MIN;  };
-  template<> struct numeric<i16> { static const i16 Max = INT16_MAX,  Min = INT16_MIN; };
-  template<> struct numeric<i32> { static const i32 Max = INT32_MAX,  Min = INT32_MIN; };
-  template<> struct numeric<i64> { static const i64 Max = INT64_MAX,  Min = INT64_MIN; };
+  namespace traits {
+      
+    template<typename T> 
+    struct MinMax {};
+      
+    template<> struct MinMax<bool> { static constexpr bool Max = true,       Min = false;     };
+    template<> struct MinMax<u8>   { static constexpr u8   Max = UINT8_MAX,  Min = 0;         };
+    template<> struct MinMax<u16>  { static constexpr u16  Max = UINT16_MAX, Min = 0;         };
+    template<> struct MinMax<u32>  { static constexpr u32  Max = UINT32_MAX, Min = 0;         };
+    template<> struct MinMax<u64>  { static constexpr u64  Max = UINT64_MAX, Min = 0;         };
+    template<> struct MinMax<i8>   { static constexpr i8   Max = INT8_MAX,   Min = INT8_MIN;  };
+    template<> struct MinMax<i16>  { static constexpr i16  Max = INT16_MAX,  Min = INT16_MIN; };
+    template<> struct MinMax<i32>  { static constexpr i32  Max = INT32_MAX,  Min = INT32_MIN; };
+    template<> struct MinMax<i64>  { static constexpr i64  Max = INT64_MAX,  Min = INT64_MIN; };
+    template<> struct MinMax<f32>  { static constexpr f32  Max = FLT_MAX,    Min = FLT_MIN;   };
+    template<> struct MinMax<f64>  { static constexpr f64  Max = DBL_MAX,    Min = DBL_MIN;   };
+
+    template<typename T>
+    struct IsSigned
+    {
+      static constexpr bool Signed = false;
+    };
+      
+    template<> struct IsSigned<i8>  { static constexpr bool Signed = true; };
+    template<> struct IsSigned<i16> { static constexpr bool Signed = true; };
+    template<> struct IsSigned<i32> { static constexpr bool Signed = true; };
+    template<> struct IsSigned<i64> { static constexpr bool Signed = true; };
+    template<> struct IsSigned<f32> { static constexpr bool Signed = true; };
+    template<> struct IsSigned<f64> { static constexpr bool Signed = true; };
+  }
+
+  namespace ops
+  {
+    template<typename T>
+    struct SignedArithmetic {};
+
+    template<> struct SignedArithmetic<i8>  { static i8  Neg(i8  value) { return -value; } };
+    template<> struct SignedArithmetic<i16> { static i16 Neg(i16 value) { return -value; } };
+    template<> struct SignedArithmetic<i32> { static i32 Neg(i32 value) { return -value; } };
+    template<> struct SignedArithmetic<i64> { static i64 Neg(i64 value) { return -value; } };
+    template<> struct SignedArithmetic<f32> { static f32 Neg(f32 value) { return -value; } };
+    template<> struct SignedArithmetic<f64> { static f64 Neg(f64 value) { return -value; } };
+
+    template<typename T>
+    struct Arithmetic
+    {
+      static T Value(T _1)           { return _1;      }
+      static T Add(T _1, T _2)       { return _1 + _2; }
+      static T Sub(T _1, T _2)       { return _1 - _2; }
+      static T Mul(T _1, T _2)       { return _1 * _2; }
+      static T Div(T _1, T _2)       { return _1 / _2; }
+
+      static T AddMul(T _1, T _2, T _3) { return Add(_1, Mul(_2, _3)); }
+      static T Mul(T _1, T _2, T _3)    { return Mul(_1, Mul(_2, _3)); }
+    };
+
+    template<typename T>
+    struct Equality
+    {
+      static bool IsZero(const T& _1)                      { return _1 == 0;  }
+      static bool Equals(const T& _1, const T& _2)         { return _1 == _2; }
+      static bool NotEquals(const T& _1, const T& _2)      { return _1 != _2; }
+      static bool LessThan(const T& _1, const T& _2)       { return _1 <  _2; }
+      static bool LessThanEquals(const T& _1, const T& _2) { return _1 <= _2; }
+      static bool MoreThan(const T& _1, const T& _2)       { return _1 >  _2; }
+      static bool MoreThanEquals(const T& _1, const T& _2) { return _1 >= _2; }
+    };
+
+    template<>
+    struct Equality<f32>
+    {
+      static bool IsZero(const f32& _1);
+      static bool Equals(const f32& _1, const f32& _2);
+      static bool NotEquals(const f32& _1, const f32& _2);
+      static bool LessThan(const f32& _1, const f32& _2);
+      static bool LessThanEquals(const f32& _1, const f32& _2);
+      static bool MoreThan(const f32& _1, const f32& _2);
+      static bool MoreThanEquals(const f32& _1, const f32& _2);
+    };
+    
+    template<>
+    struct Equality<f64>
+    {
+      static bool IsZero(const f64& _1);
+      static bool Equals(const f64& _1, const f64& _2);
+      static bool NotEquals(const f64& _1, const f64& _2);
+      static bool LessThan(const f64& _1, const f64& _2);
+      static bool LessThanEquals(const f64& _1, const f64& _2);
+      static bool MoreThan(const f64& _1, const f64& _2);
+      static bool MoreThanEquals(const f64& _1, const f64& _2);
+    };
+  }
+  
+  template<typename T>
+  struct numeric : 
+    traits::MinMax<T>, 
+    traits::IsSigned<T>,
+    ops::SignedArithmetic<T>,
+    ops::Arithmetic<T>,
+    ops::Equality<T>
+  {
+    typedef T Type;
+  };
+  
+  namespace pod
+  {
+    enum Type
+    {
+      None,
+      U8,
+      U16,
+      U32,
+      U64,
+      I8,
+      I16,
+      I32,
+      I64,
+      Float,
+      Double,
+      Boolean,
+      Char
+    };
+  }
 
 namespace bit {
 
@@ -237,8 +362,6 @@ namespace bit {
   })
 
 }} // Stardrive::bit
-
-
 
 
 //! Limiting Values
@@ -443,6 +566,17 @@ namespace Stardrive {
     return allocator->Reallocate(mem, 0, alignment);
   }
 
+  template<typename T>
+  void DestructItems(T* items, uinteger count = 1)
+  {
+    while(count)
+    {
+      items->~T();
+      ++items;
+      --count;
+    }
+  }
+
 }} // Stardrive::memory
 
 namespace Stardrive {
@@ -504,7 +638,8 @@ namespace Stardrive {
     
   };
 
-  template<typename T> struct AllocatedStore<T, memory::HeapAllocator>
+  template<typename T>
+  struct AllocatedStore<T, memory::HeapAllocator>
   {
   private:
     T*   _elements;
@@ -709,11 +844,54 @@ namespace Stardrive {
 
 
 
-//! Language Extensions
+//! Meta Language Extensions
+//! https://github.com/betajaen/Stardrive/blob/master/Documentation/meta-extensions.md
 //! 
+//! Cheat Sheet:
+//!
+//! Constants expressed as types:
+//!
+//! Constant<T, T TValue, uinteger Cookie>  -- Integer/Boolean value as a constant type
+//! Numeric                                 -- Integer; see Zeroth, First, Second, Third, Fourth
+//! TrueFalse                               -- Boolean; see True, False
+//! 
+//! Comparisons expressed as types:
+//! 
+//! meta::True                              -- True type
+//! meta::False                             -- False type
+//! meta::If                                -- Templated If condition      -- meta::If<4 == 3>    -> False as TrueFalse type
+//! meta::IfNot                             -- Templated If not condition  -- meta::IfNot<4 ===3> -> True  as TrueFalse type
+//! meta::And                               -- Bitwise And on a template True/False argument  -> meta::
+//! meta::Or                                -- Bitwise Or on a template True/False argument
+//! meta::Not                               -- Bitwise Not on a template True/False argument
+//! 
+//! Type Modifiers:
+//!
+//! meta::RemoveConst                       -- Remove const from type      -- meta::RemoveConst<const char*>::Type -> char*
+//! meta::RemoveVolatile                    -- Remove volatile from type
+//! meta::RemovePointer                     -- Remove pointer (and pointer pointer) from type
+//! meta::RemoveReference                   -- Remove reference
+//! meta::RemoveAll                         -- Just the type nothing else
+//! meta::Carry                             -- Make no modifications to type
+//! 
+//! Type Is:
+//! 
+//! meta::IsSame<T1, T2>                    -- Are two types the same?                -- int* == int* -> True
+//! meta::IsApproximately<T1, T2>           -- Are two types approximately the same?  --  int* == int   -> True
+//! meta::IsPointer<T>                      -- Is a type a pointer?
+//! meta::IsReference<T>                    -- Is a type a reference?
+//! meta::IsClass<T>                        -- Is a type a class?
+//! meta::IsUnion<T>                        -- Is a type a union?
+//! meta::IsPod<T>                          -- Is a type Plain-Old-Data               -- char, i32, f32, etc.
+//! meta::IsNotPod<T>                       -- Is a type not Plain Old-Data
+//! meta::IsPodStruct<T>                    -- Is a type a POD-like struct            -- Vector, Quaternion, etc.
+//! meta::IsEnum<T>                         -- Is a type an enum?
 
-namespace Stardrive { namespace meta {
-  
+namespace Stardrive
+{
+  namespace meta
+  {
+
   template<typename T, T TValue, uinteger TCookie = 0>
   struct Constant
   {
@@ -772,88 +950,137 @@ namespace Stardrive { namespace meta {
   template<typename T> struct RemoveReference            { typedef T Type; };
   template<typename T> struct RemoveReference<T&>        { typedef T Type; };
   template<typename T> struct RemoveReference<T&&>       { typedef T Type; };
-
   template<typename T> struct Carry                      { typedef T Type; };
   
-  namespace Pod
+  namespace impl
   {
-    enum Type
+    template<typename T> struct RemoveAll
     {
-      None,
-      U8,
-      U16,
-      U32,
-      U64,
-      I8,
-      I16,
-      I32,
-      I64,
-      Float,
-      Double,
-      Boolean,
-      Char
-    };
-  }
-
-  namespace impl {
-    template<typename T, uinteger C>
-    struct Strong
-    {
-      T value;
-      
-      Strong()
-        : value {} {}
-      
-      explicit Strong(const T value_)
-        : value(value)
-      {
-      }
-      
-      Strong(const Strong& value)
-      : value(value.value)
-      {
-      }
-
-      Strong& operator=(const Strong& other) 
-      {
-        value = other.value;
-        return *this;
-      }
-
-      Strong& operator=(const T& newValue)
-      {
-        value = newValue;
-      }
-
-      operator const T&() const 
-      {
-        return value;
-      }
-
-      operator T&()
-      {
-        return value;
-      }
-
-      bool operator==(const Strong& other) const
-      {
-        return value == other.value;
-      }
-
-      bool operator<(const Strong& other) const
-      {
-        return value < other.value;
-      }
-
+      typedef typename meta::RemovePointer<
+              typename meta::RemoveReference<
+              typename meta::RemoveVolatile<
+              typename meta::RemoveConst<T>
+              ::Type>::Type>::Type>::Type
+              Type;
     };
   }
 
   template<typename T>
-  using Strong = impl::Strong<T, 0>;
+  using Clean = typename impl::RemoveAll<T>::Type;
+
+  namespace impl
+  {
+    template<typename T1, typename T2> struct IsSame          : meta::False {};
+    template<typename T>               struct IsSame<T, T>    : meta::True  {};
+    
+    template<typename T>               struct IsPointer       : meta::False {};
+    template<typename T>               struct IsPointer<T*>   : meta::True  {};
+    
+    template<typename T>               struct IsReference     : meta::False {};
+    template<typename T>               struct IsReference<T&> : meta::True  {};
+
+    template<typename T>               struct IsEnum          : meta::If<__is_enum(T)>  {};
+    template<typename T>               struct IsPod           : meta::If<__is_pod(T)>   {};
+    template<typename T>               struct IsClass         : meta::If<__is_class(T)> {};
+    template<typename T>               struct IsUnion         : meta::If<__is_union(T)> {};
+    template<typename T>               struct IsPodStruct     : meta::If<__is_pod(T) && __is_class(T) && __is_trivial(T)> {};
+  }
+
+  template<typename T1, typename T2>
+  using IsSame          = impl::IsSame<T1, T2>;
+    
+  template<typename T1, typename T2>
+  using IsApproximately = impl::IsSame<typename impl::RemoveAll<T1>::Type, typename impl::RemoveAll<T2>::Type>;
+
+  template<typename T>
+  using IsPointer       = impl::IsPointer<typename impl::RemoveAll<T>::Type>;
+
+  template<typename T>
+  using IsReference     = impl::IsReference<typename impl::RemoveAll<T>::Type>;
+
+  template<typename T>
+  using IsPod           = impl::IsPod<typename impl::RemoveAll<T>::Type>;
+
+  template<typename T>
+  using IsNotPod        = meta::Not<impl::IsPod<typename impl::RemoveAll<T>::Type>>;
+    
+  template<typename T>
+  using IsPodStruct     = impl::IsPodStruct<T>;
+
+  template<typename T>
+  using IsEnum          = impl::IsEnum<T>;
+    
+  template<typename T>
+  using IsClass         = impl::IsClass<T>;
+
+  template<typename T>
+  using IsUnion         = impl::IsUnion<T>;
 
 }} // Stardrive::meta
 
-namespace Stardrive {
+
+//! Type Hardening
+//! https://github.com/betajaen/Stardrive/blob/master/Documentation/type-hardening.md
+//! 
+//! Cheat Sheet:
+//!
+//!  Strong<T, Cookie> -- Strong typedef                            -- typedef Strong<f32, 'LENG'> Length; Length len = Length(4.0f);
+//!  Optional<T>       -- Optional value                            -- Optional<int>::True(4),  Optional<int>::False()
+//!  Optional<void>    -- Optional with no type of value            -- Optional<void>::True(), Optional<void>::False()
+//!  Either<T1, T2>    -- Either one value or an other but not both -- Either<f32, const char*>::First(3.14f), Either<f32, const char*>::Second("Pi") 
+//!  Tribool           -- True, False or Unknown type
+//!  Opaque<Cookie>    -- Representation of a pointer or handle as an uinteger to hide implementation.
+//!  FixedVar<T>       -- Store of a variable inside itself with delayed New/Delete functions.
+
+namespace Stardrive
+{
+
+  template<typename T, uinteger Cookie>
+  struct Strong
+  {
+    T value;
+      
+    Strong()
+      : value {} {}
+    
+    explicit Strong(const T value_)
+      : value(value) {}
+    
+    Strong(const Strong& value)
+      : value(value.value) {}
+
+    Strong& operator=(const Strong& other) 
+    {
+      value = other.value;
+      return *this;
+    }
+
+    Strong& operator=(const T& newValue)
+    {
+      value = newValue;
+      return *this;
+    }
+
+    operator const T&() const 
+    {
+      return value;
+    }
+
+    operator T&()
+    {
+      return value;
+    }
+
+    bool operator==(const Strong& other) const
+    {
+      return value == other.value;
+    }
+
+    bool operator<(const Strong& other) const
+    {
+      return value < other.value;
+    }
+  };
 
   template<typename T>
   struct Optional
@@ -864,6 +1091,24 @@ namespace Stardrive {
     Optional();
     Optional(const T& value_);
     Optional(T&& value_);
+
+    inline bool IsSet() const { return !!isSet; }
+
+    static Optional<T> False();
+    static Optional<T> True(const T& value_);
+  };
+
+  template<>
+  struct Optional<void>
+  {
+    b32 isSet : 1;
+
+    Optional();
+    
+    inline bool IsSet() const { return !!isSet; }
+
+    static Optional<void> False();
+    static Optional<void> True();
   };
 
   template<typename T1, typename T2>
@@ -888,16 +1133,31 @@ namespace Stardrive {
 
     Either(meta::First,  const T1& first_);
     Either(meta::Second, const T2& second_);
+
+    static Either<T1, T2> First(const T1& first_);
+    static Either<T1, T2> Second(const T2& second_);
   };
 
   template <typename T>
-  Optional<T>::Optional() : value {}, isSet(false) {}
+  inline Optional<T>::Optional() : value {}, isSet(false) {}
   
   template <typename T>
-  Optional<T>::Optional(T&& value_) : value(value_), isSet(true) {}
+  inline Optional<T>::Optional(T&& value_) : value(value_), isSet(true) {}
   
   template <typename T>
-  Optional<T>::Optional(const T& value_) : value(value_), isSet(true) {}
+  inline Optional<T> Optional<T>::False() { return Optional<T>(); }
+
+  template <typename T>
+  inline Optional<T> Optional<T>::True(const T& value_) { return Optional<T>(value_); }
+
+  template <typename T>
+  inline Optional<T>::Optional(const T& value_) : value(value_), isSet(true) {}
+
+  inline Optional<void>::Optional() : isSet(false) {}
+
+  inline Optional<void> Optional<void>::False() { return Optional<void>(); }
+
+  inline Optional<void> Optional<void>::True()  { Optional<void> m; m.isSet = true; return m; }
 
   template <typename T1, typename T2>
   Either<T1, T2>::Either(meta::First, const T1& first_): first(first_), isFirst(true) {}
@@ -905,204 +1165,26 @@ namespace Stardrive {
   template <typename T1, typename T2>
   Either<T1, T2>::Either(meta::Second, const T2& second_): second(second_), isFirst(true) {}
 
-  template<typename T>
-  Optional<T> MakeOptional() { return Optional<T>(); }
-  
-  template<typename T>
-  Optional<T> MakeOptional(const T& value)   { return Optional<T>(value); }
-  
-  template<typename T>
-  Optional<T> MakeOptional(T&& value)   { return Optional<T>(value); }
-  
-  template<typename T1, typename T2>
-  Either<T1, T2> MakeEither(const T1& value) { return Either<T1, T2>(meta::First(), value); }
+  template <typename T1, typename T2>
+  Either<T1, T2> Either<T1, T2>::First(const T1& first_) { return Either<T1, T2>(meta::First(), first_); }
 
-  template<typename T1, typename T2>
-  Either<T1, T2> MakeEither(const T2& value) { return Either<T1, T2>(meta::Second(), value); }
+  template <typename T1, typename T2>
+  Either<T1, T2> Either<T1, T2>::Second(const T2& second_) { return Either<T1, T2>(meta::Second(), second_); }
 
-} // Stardrive
-
-namespace Stardrive { namespace hash
-{
-  SFunctionDoc(Text="Calculate FNV-1A Hash from the given text")
-  u32 fnv1a(const char8* str);
-
-  #if defined(SStardrive)
-
-  u32 fnv1a(const char8* str)
-  {
-    // Implementation from https://notes.underscorediscovery.com/constexpr-fnv1a/
-    u32 hash  = 0x811c9dc5;
-    u32 prime = 0x1000193;
-      
-    if (nullptr == str)
-      return hash;
-    
-    while(*str != '\0')
-    {
-        u8 value = *str;
-        hash = hash ^ value;
-        hash *= prime;
-        str++;
-    }
-    
-    return hash;
-  }
-  #endif
-
-  SFunctionDoc(Text="constexpr version of fnv1a")
-  constexpr auto fnv1a_const(const char8* const str, const unsigned value = 0x811c9dc5ull) -> unsigned
-  {
-    // Implementation from https://notes.underscorediscovery.com/constexpr-fnv1a/
-    return (str[0] == '\0') ? value : fnv1a_const(&str[1], 
-    static_cast<u32>
-    (
-      (value ^ u64(str[0])) * 0x1000193ull)
-    );
-  }
-
-}} // Stardrive::hash
-
-
-
-//! Endian
-//! 
-//! Cheat Sheet:
-//! 
-//! For u/i 8,16,32,64 types
-//!
-//! Swap      -- Swap endianness of a value
-//! Convert   -- Convert a value from one endian to another type.
-
-namespace Stardrive { namespace endian {
-  
-  namespace Endianess
-  {
-    enum Enum
-    {
-      Little,
-      Big
-    };
-  }
-  
-  inline u8 Swap(u8 v)
-  {
-    return v;
-  }
-  
-  inline i8 Swap(i8 v)
-  {
-    return v;
-  }
-
-  inline u16 Swap(u16 v)
-  {
-    u16 r;
-    ((byte*)&r)[0] = ((byte*)&v)[1];
-    ((byte*)&r)[1] = ((byte*)&v)[0];
-    return v;
-  }
-  
-  inline i32 Swap(i32 v)
-  {
-    i32 r;
-    ((byte*)&r)[0] = ((byte*)&v)[3];
-    ((byte*)&r)[1] = ((byte*)&v)[2];
-    ((byte*)&r)[2] = ((byte*)&v)[1];
-    ((byte*)&r)[3] = ((byte*)&v)[0];
-    return v;
-  }
-  
-  inline u32 Swap(u32 v)
-  {
-    u32 r;
-    ((byte*)&r)[0] = ((byte*)&v)[3];
-    ((byte*)&r)[1] = ((byte*)&v)[2];
-    ((byte*)&r)[2] = ((byte*)&v)[1];
-    ((byte*)&r)[3] = ((byte*)&v)[0];
-    return v;
-  }
-  
-  inline i64 Swap(i64 v)
-  {
-    i64 r;
-    ((byte*)&r)[0] = ((byte*)&v)[7];
-    ((byte*)&r)[1] = ((byte*)&v)[6];
-    ((byte*)&r)[2] = ((byte*)&v)[5];
-    ((byte*)&r)[3] = ((byte*)&v)[4];
-    ((byte*)&r)[4] = ((byte*)&v)[3];
-    ((byte*)&r)[5] = ((byte*)&v)[2];
-    ((byte*)&r)[6] = ((byte*)&v)[1];
-    ((byte*)&r)[7] = ((byte*)&v)[0];
-    return v;
-  }
-  
-  inline u64 Swap(u64 v)
-  {
-    u64 r;
-    ((byte*)&r)[0] = ((byte*)&v)[7];
-    ((byte*)&r)[1] = ((byte*)&v)[6];
-    ((byte*)&r)[2] = ((byte*)&v)[5];
-    ((byte*)&r)[3] = ((byte*)&v)[4];
-    ((byte*)&r)[4] = ((byte*)&v)[3];
-    ((byte*)&r)[5] = ((byte*)&v)[2];
-    ((byte*)&r)[6] = ((byte*)&v)[1];
-    ((byte*)&r)[7] = ((byte*)&v)[0];
-    return v;
-  }
-
-  template<typename TNumeric, Endianess::Enum From, Endianess::Enum To> 
-  TNumeric Convert(TNumeric value) 
-  {
-    return (From == To) ? value : Swap(value);
-  }
-
-  inline u8  Convert(u8 value,  Endianess::Enum from, Endianess::Enum to) { return from == to ? value : Swap(value); }
-  inline i8  Convert(i8 value,  Endianess::Enum from, Endianess::Enum to) { return from == to ? value : Swap(value); }
-  inline u16 Convert(u16 value, Endianess::Enum from, Endianess::Enum to) { return from == to ? value : Swap(value); }
-  inline i16 Convert(i16 value, Endianess::Enum from, Endianess::Enum to) { return from == to ? value : Swap(value); }
-  inline u32 Convert(u32 value, Endianess::Enum from, Endianess::Enum to) { return from == to ? value : Swap(value); }
-  inline i32 Convert(i32 value, Endianess::Enum from, Endianess::Enum to) { return from == to ? value : Swap(value); }
-  inline u64 Convert(u64 value, Endianess::Enum from, Endianess::Enum to) { return from == to ? value : Swap(value); }
-  inline i64 Convert(i64 value, Endianess::Enum from, Endianess::Enum to) { return from == to ? value : Swap(value); }
-
-}}
-
-//! Bytes
-//! 
-//! Cheat Sheet:
-//! 
-
-namespace Stardrive { namespace bytes {
-  
-  template<typename T>
-  inline byte* Get(const T& value) { return (byte*) &value; }
-  
-  template<typename T>
-  inline uinteger Length()         { return sizeof(T); }
-  
-}} // Stardrive::bytes
-
-
-//! Tribool
-//!
-
-namespace Stardrive {
-
-  struct tribool
+  struct Tribool
   {
     i8 v;
     
-    tribool()       : v(-1) {}
-    tribool(bool m) : v(m ? 1 : 0)  {}
+    Tribool()       : v(-1) {}
+    Tribool(bool m) : v(m ? 1 : 0)  {}
     
-    tribool& operator=(bool m)
+    Tribool& operator=(bool m)
     {
       v = m;
       return *this;
     }
 
-    tribool& operator=(tribool m)
+    Tribool& operator=(Tribool m)
     {
       v = m.v;
       return *this;
@@ -1119,26 +1201,86 @@ namespace Stardrive {
     {
       return !operator==(m);
     }
+    
+    static Tribool True()    { return Tribool(true); }
+    static Tribool False()   { return Tribool(false); }
+    static Tribool Unknown() { return Tribool(); }
 
   };
 
-  inline tribool operator!(tribool m)
+  inline Tribool operator!(Tribool m)
   {
     if (m.v == 0)
-      return tribool(true);
+      return Tribool(true);
     else if (m.v == 1)
-      return tribool(false);
+      return Tribool(false);
     else
-      return tribool();
+      return Tribool();
   }
-
-  inline bool IsUnknown(tribool m)
+  
+  inline bool IsUnknown(Tribool m)
   {
     return m.v == -1;
   }
-
-  const tribool unknown;
   
-} // namespace Stardrive
+  template<uinteger Cookie>
+  struct Opaque
+  {
+    u64 opaque;
+
+    template<typename T>
+    inline void Acquire(const T& value)
+    {
+      opaque = (u64) value;
+    }
+
+    template<typename T>
+    inline T Cast() const
+    {
+      return (T) opaque;
+    }
+  };
+
+  template<typename T>
+  struct FixedVar
+  {
+    u8 data[sizeof(T)];
+    
+    void New()
+    {
+      memory::Zero(&data[0], sizeof(T));
+      new((void*) &data[0]) T();
+    }
+
+    void Delete()
+    {
+      T* t = operator*();
+      t->~T();
+      memory::Zero(&data[0], sizeof(T));
+    }
+
+    T* operator*()
+    {
+      return (T*) &data[0];
+    }
+
+    const T* operator*() const
+    {
+      return (T*) &data[0];
+    }
+
+    T* operator->()
+    {
+      return (T*) &data[0];
+    }
+
+    const T* operator->() const
+    {
+      return (T*) &data[0];
+    }
+
+  };
+
+} // Stardrive
 
 #endif
