@@ -25,4 +25,9 @@ Macros and Meta Programming
 
 * [Common Macros](Documentation/common-macros.md)
 * [Variadic Foreach](Documentation/variadic-foreach.md)
+* [Type Traits and Logic](Documentation/traits-and-logic.md)
 
+Use with other libraries
+------------------------
+
+* [Dynamic Library Loading](Documentation/module.md)

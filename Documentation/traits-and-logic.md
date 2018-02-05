@@ -1,13 +1,5 @@
-
-Meta Extensions
+Type Traits
 ===============
-
-The meta extensions are a collection of macros and templates to allow C++ meta programming. 
-
-The main parts are in the `Stardrive.h` file, but expanded in the `Optional/Stardrive_meta.h` header.
-
-Traits
-------
 
 There are utilities to determine at compile type if a particular type has a type-trait;
 
@@ -101,62 +93,3 @@ Simple uses of these could be as a cookie type within functions, that have ident
     
     
 ```
-
-Macro Expansion
-===============
-
-Finally we have the macro side of meta programming, which is in the `Optional/StardriveMeta.h` header.
-
-You may wish to define the `SMetaMaximumArguments` to either `8,16,24,32` to reduce or expand the maximum amount of arguments you are willing to use with them.
-
-Counting
------------
-
-First of all, let's count some arguments.
-
-```
-void GetCount()
-{
-	int count = SMetaCountVaArgs(float, int, char);   // 3
-    int count2 = SMetaCountVaArgs(1, 2, 4, 8);        // 4
-}
- ```
-
-Arguments to Code
--------
-
-Instead let's expand that into something more useful. How about a list of types?
-
-```
-#define MAKE_FUNCTION(NAME) NAME Make_##NAME();
-SMetaForeach(MAKE_FUNCTION, float, int, char)
-```
-Becomes:
-```
-float Make_float();
-int   Make_int();
-char  Make_char();
-```
-
-Let's do something more useful, how about an enum?
-```
-#define MAKE_ENUM(NUM, NAME) NAME = NUM,
-enum Quarks
-{
-  SMetaForeachNum(MAKE_ENUM, Up, Down, Charm, Strange, Top, Bottom)
-};
-```
-```
-enum Quarks
-  {
-    Up = 0, 
-    Down = 1,
-    Charm = 2, 
-    Strange = 3, 
-    Top = 4, 
-    Bottom = 5, 
-  };
-```
-
-There are some variants on this as well, `SMetaForeachNumA1` and `SMetaForeachNumA2` will allow you to pass in 1 or 2 argument and use them as arguments in your macro expansion macro.
-
