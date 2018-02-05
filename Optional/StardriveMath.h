@@ -23,35 +23,168 @@
 
 namespace Stardrive
 {
+  
+  struct Radian;
+  struct Degree;
+  
+  Radian Radians(f32 radians);
+  Degree Degrees(f32 degrees);
+
+  struct Radian
+  {
+  protected:
+    f32 rads;
+  public:
+  
+    friend Radian Radians(f32 radians);
+
+    inline Radian() : rads(0) {}
+    inline operator Degree() const;
+
+    inline f32     Radians() const
+    {
+      return rads;
+    }
+
+    inline f32 Degrees() const;
+  };
+  
+  struct Degree
+  {
+  protected:
+    f32 degs;
+  public:
+    friend Degree Degrees(f32 degrees);
+
+    inline Degree() : degs(0) {}
+    inline operator Radian() const;
+
+    inline f32 Degrees() const
+    {
+      return degs;
+    }
+
+    inline f32 Radians() const;
+  };
+
   namespace math
   {
     constexpr f32 Pi = 3.1415926535897932384626433832795f;
-
+    
     //! Radians to Degrees
     inline f32 RadToDeg(f32 value)
     {
       return ((value) * 180.0f / Pi);
     }
 
+    //! Degrees to Radians
     inline f32 DegToRad(f32 value)
     {
       return ((value) * Pi / 180.0f);
     }
+  }
+
+  inline f32 Radian::Degrees() const
+  {
+    return math::RadToDeg(rads);
+  }
+
+  inline f32 Degree::Radians() const
+  {
+    return math::DegToRad(degs);
+  }
+  
+  inline Radian Radians(f32 radians)
+  {
+    Radian rad;
+    rad.rads = radians;
+    return rad;
+  }
+  
+  inline Degree Degrees(f32 degrees)
+  {
+    Degree deg;
+    deg.degs = degrees;
+    return deg;
+  }
+
+  inline Radian::operator Degree() const
+  {
+    return Degree(*this);
+  }
+
+  inline Degree::operator Radian() const
+  {
+    return Radian(*this);
+  }
+
+  namespace math
+  {
+    //! Cosine
+    f32 Cos(f32 radians);
 
     //! Cosine
-    f32 Cos(f32 value);
+    inline f32 Cos(const Radian& value)
+    {
+      return Cos(value.Radians());
+    }
+
+    //! Cosine
+    inline f32 Cos(const Degree& value)
+    {
+      return Cos(value.Radians());
+    }
 
     //! Sine
-    f32 Sin(f32 value);
+    f32 Sin(f32 radians);
+
+    //! Sine
+    inline f32 Sin(const Radian& value)
+    {
+      return Sin(value.Radians());
+    }
+
+    //! Sine
+    inline f32 Sin(const Degree& value)
+    {
+      return Sin(value.Radians());
+    }
 
     //! Cosine/Sine
-    void CosSin(f32 value, f32& c, f32& s);
+    void CosSin(f32 radians, f32& c, f32& s);
 
-    //! Tan
-    f32 Tan(f32 value);
+    //! Cosine/Sine
+    inline void CosSin(const Radian& value, f32& c, f32& s)
+    {
+      return CosSin(value.Radians(), c, s);
+    }
+    
+    //! Cosine/Sine
+    inline void CosSin(const Degree& value, f32& c, f32& s)
+    {
+      return CosSin(value.Radians(), c, s);
+    }
+
+    //! Tangent
+    f32 Tan(f32 radians);
+
+    //! Tangent
+    inline f32 Tan(const Radian& value)
+    {
+      return Tan(value.Radians());
+    }
+
+    //! Tangent
+    inline f32 Tan(const Degree& value)
+    {
+      return Tan(value.Radians());
+    }
 
     //! Squared
-    f32 Squared(f32 value);
+    inline f32 Squared(f32 value)
+    {
+      return value * value;
+    }
 
     //! Square Root
     f32 SquareRoot(f32 value);
@@ -64,21 +197,6 @@ namespace Stardrive
 
     //! Floor
     f32 Floor(f32 value);
-
-    //! Min
-    f32 Min(f32 _1, f32 _2);
-
-    //! Min
-    f32 Min(f32 _1, f32 _2, f32 _3);
-
-    //! Max
-    f32 Max(f32 _1, f32 _2);
-
-    //! Max
-    f32 Max(f32 _1, f32 _2, f32 _3);
-
-    //! Clamp
-    f32 Clamp(f32 value, f32 lower, f32 upper);
 
     //! Wrap
     f32 Wrap(f32 value, f32 upper);
@@ -97,7 +215,9 @@ namespace Stardrive
 
 #endif
 
-#ifdef SStardriveMath
+#if defined(SStardriveMath)
+#ifndef STARDRIVE_MATH_IMPL_H
+#define STARDRIVE_MATH_IMPL_H
 
 #include <math.h>
 
@@ -126,11 +246,6 @@ namespace Stardrive
       return ::tanf(value);
     }
     
-    f32 Squared(f32 value)
-    {
-      return value * value;
-    }
-
     f32 SquareRoot(f32 value)
     {
       return ::sqrtf(value);
@@ -150,47 +265,7 @@ namespace Stardrive
     {
       return ::floorf(value);
     }
-
-    f32 Min(f32 _1, f32 _2)
-    {
-      return fminf(_1, _2);
-    }
-
-    f32 Min(f32 _1, f32 _2, f32 _3)
-    {
-      return Min(_1, Min(_2, _3));
-    }
     
-    f32 Min(f32 _1, f32 _2, f32 _3, f32 _4)
-    {
-      return Min(_1, Min(_2, Min(_3, _4)));
-    }
-
-    f32 Max(f32 _1, f32 _2)
-    {
-      return fmaxf(_1, _2);
-    }
-
-    f32 Max(f32 _1, f32 _2, f32 _3)
-    {
-      return Max(_1, Max(_2, _3));
-    }
-    
-    f32 Max(f32 _1, f32 _2, f32 _3, f32 _4)
-    {
-      return Max(_1, Max(_2, Max(_3, _4)));
-    }
-
-    f32 Clamp(f32 value, f32 lower, f32 upper)
-    {
-      return Min(lower, Max(value, upper));
-    }
-    
-    f32 Modulus(f32 _1, f32 _2)
-    {
-      return fmodf(_1, _2);
-    }
-
     f32 Wrap(f32 value, f32 upper)
     {
       return fmodf(upper + fmodf(value, upper), upper);
@@ -201,6 +276,11 @@ namespace Stardrive
       return lower + Wrap(value - lower, upper - lower);
     }
     
+    f32 Modulus(f32 _1, f32 _2)
+    {
+      return fmodf(_1, _2);
+    }
+
     f32 Lerp(f32 _1, f32 _2, f32 alpha)
     {
       return (_1 + alpha * (_2 - _1));
@@ -210,3 +290,5 @@ namespace Stardrive
 }
 
 #endif
+#endif
+
