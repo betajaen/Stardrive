@@ -626,7 +626,7 @@ namespace Stardrive { namespace array {
     void Copy(Array<T, TStore>& dst, const Array<T, TStore>& src)
     {
       array::SetCapacity(dst, src.size);
-      CopyMemory(dst.elements, src.elements, src.size * sizeof(T));
+      memory::Copy(GetData(dst), GetData(src), src.size * sizeof(T));
     }
 
     template<typename T, typename TStore>
@@ -653,14 +653,14 @@ template<typename T, typename TStore>
 Array<T, TStore>::Array(const Array<T, TStore>& buffer)
   : TStore(), size(0)
 {
-  array::Copy(this, buffer);
+  array::Copy(*this, buffer);
 }
 
 template<typename T, typename TStore>
 Array<T, TStore>::Array(Array<T, TStore>&& buffer)
   : TStore(), size(0)
 {
-  array::Move(this, buffer);
+  array::Move(*this, buffer);
 }
 
 template<typename T, typename TStore>

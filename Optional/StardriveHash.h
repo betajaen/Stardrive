@@ -25,10 +25,10 @@ namespace Stardrive
   namespace hash
   {
     //! Calculate FNV-1A hash from given null-terminated string.
-    u32 fnv1a(const char8* str);
+    u32 fnv1a(const Character* str);
 
     //! Calculate FNV-1A hash at compile time from the given null-terminated string
-    constexpr auto fnv1a_const(const char8* const str, const unsigned value = 0x811c9dc5ull) -> unsigned
+    constexpr auto fnv1a_const(const Character* const str, const unsigned value = 0x811c9dc5ull) -> unsigned
     {
       // Implementation from https://notes.underscorediscovery.com/constexpr-fnv1a/
       return (str[0] == '\0') ? value : fnv1a_const(&str[1], 
