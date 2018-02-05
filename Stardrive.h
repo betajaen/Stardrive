@@ -104,7 +104,6 @@
 #define SNoCopy(CLASS)                    CLASS(const CLASS&) = delete;  CLASS& operator=(const CLASS&) = delete;   
 #define SNoMove(CLASS)                    CLASS(const CLASS&&) = delete; CLASS& operator=(const CLASS&&) = delete; 
 
-
 //! Assertions
 #define SAssert(COND, REASON)             assert((COND) && REASON)
 #define SEnsure(COND)                     assert(COND)
@@ -174,32 +173,33 @@
 
 namespace Stardrive {
 
-  typedef size_t    uinteger; SCompilerAssert(sizeof(uinteger) == (SArchitecture / 8), "Uninteger is expected to match register size");
-  typedef intptr_t  integer;  SCompilerAssert(sizeof(integer ) == (SArchitecture / 8), "Integer is expected to match register size");
+  typedef size_t    uinteger;   SCompilerAssert(sizeof(uinteger) == (SArchitecture / 8), "Uninteger is expected to match register size");
+  typedef intptr_t  integer;    SCompilerAssert(sizeof(integer ) == (SArchitecture / 8), "Integer is expected to match register size");
   
-  typedef uint8_t   byte;     SCompilerAssert(sizeof(byte  )   == 1, "Unexpected byte size. Should be 1 bytes.");
-  typedef uint16_t  word;     SCompilerAssert(sizeof(word  )   == 2, "Unexpected word size. Should be 2 bytes.");
-  typedef uint32_t  dword;    SCompilerAssert(sizeof(dword )   == 4, "Unexpected dword size. Should be 4 bytes.");
-  typedef uint64_t  qword;    SCompilerAssert(sizeof(qword )   == 8, "Unexpected qword size. Should be 8 bytes.");
-  typedef int8_t    sbyte;    SCompilerAssert(sizeof(sbyte )   == 1, "Unexpected sbyte size. Should be 1 bytes.");
-  typedef int16_t   sword;    SCompilerAssert(sizeof(sword )   == 2, "Unexpected sword size. Should be 2 bytes.");
-  typedef int32_t   sdword;   SCompilerAssert(sizeof(sdword)   == 4, "Unexpected sdword size. Should be 4 bytes.");
-  typedef int64_t   sqword;   SCompilerAssert(sizeof(sqword)   == 8, "Unexpected sqword size. Should be 8 bytes.");
+  typedef uint8_t   byte;       SCompilerAssert(sizeof(byte  )   == 1, "Unexpected byte size. Should be 1 bytes.");
+  typedef uint16_t  word;       SCompilerAssert(sizeof(word  )   == 2, "Unexpected word size. Should be 2 bytes.");
+  typedef uint32_t  dword;      SCompilerAssert(sizeof(dword )   == 4, "Unexpected dword size. Should be 4 bytes.");
+  typedef uint64_t  qword;      SCompilerAssert(sizeof(qword )   == 8, "Unexpected qword size. Should be 8 bytes.");
+  typedef int8_t    sbyte;      SCompilerAssert(sizeof(sbyte )   == 1, "Unexpected sbyte size. Should be 1 bytes.");
+  typedef int16_t   sword;      SCompilerAssert(sizeof(sword )   == 2, "Unexpected sword size. Should be 2 bytes.");
+  typedef int32_t   sdword;     SCompilerAssert(sizeof(sdword)   == 4, "Unexpected sdword size. Should be 4 bytes.");
+  typedef int64_t   sqword;     SCompilerAssert(sizeof(sqword)   == 8, "Unexpected sqword size. Should be 8 bytes.");
 
-  typedef uint8_t   u8;       SCompilerAssert(sizeof(u8  )     == 1, "Unexpected u8 size. Should be 1 bytes.");
-  typedef uint16_t  u16;      SCompilerAssert(sizeof(u16 )     == 2, "Unexpected u16 size. Should be 2 bytes.");
-  typedef uint32_t  u32;      SCompilerAssert(sizeof(u32 )     == 4, "Unexpected u32 size. Should be 4 bytes.");
-  typedef uint64_t  u64;      SCompilerAssert(sizeof(u64 )     == 8, "Unexpected u64 size. Should be 8 bytes.");
-  typedef int8_t    i8;       SCompilerAssert(sizeof(i8  )     == 1, "Unexpected i8 size. Should be 1 bytes.");
-  typedef int16_t   i16;      SCompilerAssert(sizeof(i16 )     == 2, "Unexpected i16 size. Should be 2 bytes.");
-  typedef int32_t   i32;      SCompilerAssert(sizeof(i32 )     == 4, "Unexpected i32 size. Should be 4 bytes.");
-  typedef int64_t   i64;      SCompilerAssert(sizeof(i64 )     == 8, "Unexpected i64 size. Should be 8 bytes.");
+  typedef uint8_t   u8;         SCompilerAssert(sizeof(u8  )     == 1, "Unexpected u8 size. Should be 1 bytes.");
+  typedef uint16_t  u16;        SCompilerAssert(sizeof(u16 )     == 2, "Unexpected u16 size. Should be 2 bytes.");
+  typedef uint32_t  u32;        SCompilerAssert(sizeof(u32 )     == 4, "Unexpected u32 size. Should be 4 bytes.");
+  typedef uint64_t  u64;        SCompilerAssert(sizeof(u64 )     == 8, "Unexpected u64 size. Should be 8 bytes.");
+  typedef int8_t    i8;         SCompilerAssert(sizeof(i8  )     == 1, "Unexpected i8 size. Should be 1 bytes.");
+  typedef int16_t   i16;        SCompilerAssert(sizeof(i16 )     == 2, "Unexpected i16 size. Should be 2 bytes.");
+  typedef int32_t   i32;        SCompilerAssert(sizeof(i32 )     == 4, "Unexpected i32 size. Should be 4 bytes.");
+  typedef int64_t   i64;        SCompilerAssert(sizeof(i64 )     == 8, "Unexpected i64 size. Should be 8 bytes.");
 
-  typedef int32_t   b32;      SCompilerAssert(sizeof(b32)      == 4, "Unexpected b32 size. Should be 4 bytes.");
-  typedef char      char8;    SCompilerAssert(sizeof(char8)    == 1, "Unexpected char8 size. Should be 1 byte.");
+  typedef int32_t   b32;        SCompilerAssert(sizeof(b32)      == 4, "Unexpected b32 size. Should be 4 bytes.");
+  typedef byte      Character;  SCompilerAssert(sizeof(Character)== 1, "Unexpected Character size. Should be 1 byte.");
+  typedef u32       Character32;SCompilerAssert(sizeof(Character32)== 4, "Unexpected Character32 size. Should be 4 bytes.");
 
-  typedef float     f32;      SCompilerAssert(sizeof(f32)      == 4, "Unexpected f32 size. Should be 4 bytes.");
-  typedef double    f64;      SCompilerAssert(sizeof(f64)      == 8, "Unexpected f64 size. Should be 4 bytes.");
+  typedef float     f32;        SCompilerAssert(sizeof(f32)      == 4, "Unexpected f32 size. Should be 4 bytes.");
+  typedef double    f64;        SCompilerAssert(sizeof(f64)      == 8, "Unexpected f64 size. Should be 4 bytes.");
 
   #define SChar               char
   #define SSignedChar         signed char
@@ -272,13 +272,19 @@ namespace Stardrive {
     template<typename T>
     struct Equality
     {
-      static bool IsZero(const T& _1)                      { return _1 == 0;  }
-      static bool Equals(const T& _1, const T& _2)         { return _1 == _2; }
-      static bool NotEquals(const T& _1, const T& _2)      { return _1 != _2; }
-      static bool LessThan(const T& _1, const T& _2)       { return _1 <  _2; }
-      static bool LessThanEquals(const T& _1, const T& _2) { return _1 <= _2; }
-      static bool MoreThan(const T& _1, const T& _2)       { return _1 >  _2; }
-      static bool MoreThanEquals(const T& _1, const T& _2) { return _1 >= _2; }
+      static bool IsZero(const T& _1)                         { return _1 == 0;  }
+      static bool Equals(const T& _1, const T& _2)            { return _1 == _2; }
+      static bool NotEquals(const T& _1, const T& _2)         { return _1 != _2; }
+      static bool LessThan(const T& _1, const T& _2)          { return _1 <  _2; }
+      static bool LessThanEquals(const T& _1, const T& _2)    { return _1 <= _2; }
+      static bool MoreThan(const T& _1, const T& _2)          { return _1 >  _2; }
+      static bool MoreThanEquals(const T& _1, const T& _2)    { return _1 >= _2; }
+      static T    IIfEquals(const T& _1, const T& _2)         { return Equals(_1, _2)         ? _1 : _2; }
+      static T    IIfNotEquals(const T& _1, const T& _2)      { return NotEquals(_1, _2)      ? _1 : _2; }
+      static T    IIfLessThan(const T& _1, const T& _2)       { return LessThan(_1, _2)       ? _1 : _2; }
+      static T    IIfLessThanEquals(const T& _1, const T& _2) { return LessThanEquals(_1, _2) ? _1 : _2; }
+      static T    IIfMoreThan(const T& _1, const T& _2)       { return MoreThan(_1, _2)       ? _1 : _2; }
+      static T    IIfMoreThanEquals(const T& _1, const T& _2) { return MoreThanEquals(_1, _2) ? _1 : _2; }
     };
 
     template<>
@@ -291,6 +297,12 @@ namespace Stardrive {
       static bool LessThanEquals(const f32& _1, const f32& _2);
       static bool MoreThan(const f32& _1, const f32& _2);
       static bool MoreThanEquals(const f32& _1, const f32& _2);
+      static f32  IIfEquals(const f32& _1, const f32& _2)         { return Equals(_1, _2)         ? _1 : _2; }
+      static f32  IIfNotEquals(const f32& _1, const f32& _2)      { return NotEquals(_1, _2)      ? _1 : _2; }
+      static f32  IIfLessThan(const f32& _1, const f32& _2)       { return LessThan(_1, _2)       ? _1 : _2; }
+      static f32  IIfLessThanEquals(const f32& _1, const f32& _2) { return LessThanEquals(_1, _2) ? _1 : _2; }
+      static f32  IIfMoreThan(const f32& _1, const f32& _2)       { return MoreThan(_1, _2)       ? _1 : _2; }
+      static f32  IIfMoreThanEquals(const f32& _1, const f32& _2) { return MoreThanEquals(_1, _2) ? _1 : _2; }
     };
     
     template<>
@@ -303,6 +315,12 @@ namespace Stardrive {
       static bool LessThanEquals(const f64& _1, const f64& _2);
       static bool MoreThan(const f64& _1, const f64& _2);
       static bool MoreThanEquals(const f64& _1, const f64& _2);
+      static f64  IIfEquals(const f64& _1, const f64& _2)         { return Equals(_1, _2)         ? _1 : _2; }
+      static f64  IIfNotEquals(const f64& _1, const f64& _2)      { return NotEquals(_1, _2)      ? _1 : _2; }
+      static f64  IIfLessThan(const f64& _1, const f64& _2)       { return LessThan(_1, _2)       ? _1 : _2; }
+      static f64  IIfLessThanEquals(const f64& _1, const f64& _2) { return LessThanEquals(_1, _2) ? _1 : _2; }
+      static f64  IIfMoreThan(const f64& _1, const f64& _2)       { return MoreThan(_1, _2)       ? _1 : _2; }
+      static f64  IIfMoreThanEquals(const f64& _1, const f64& _2) { return MoreThanEquals(_1, _2) ? _1 : _2; }
     };
   }
   
@@ -371,38 +389,40 @@ namespace bit {
 //! Min   -- Minimum of A, B or A, B, C
 //! Max   -- Maximum of A, B or A, B, C
 //! Clamp -- Minimum < Value < Maximum 
-
+//! 
+//! Note: These functions work with any type that implements numeric<T>
+//!
 namespace Stardrive {
   
-  SFunctionDoc(Text="Minimum of the a and b")
+  //! Minimum of two values
   template<typename T>
-  T Min(const T& a, const T& b)
+  T Min(const T& _1, const T& _2)
   {
-    return a < b ? a : b;
+    return numeric<T>::IIfLessThan(_1, _2);
   };
 
-  SFunctionDoc(Text="Minimum of a, b and c")
+  //! Minimum of three values
   template<typename T>
-  T Min(const T& a, const T& b, const T&c)
+  T Min(const T& _1, const T& _2, const T& _3)
   {
-    return Min(Min(a, b), c);
+    return numeric<T>::IIfLessThan(_1, numeric<T>::IIfLessThan(_2, _3));
   };
   
-  SFunctionDoc(Text="Maximum of the a and b")
+  //! Maximum of two values
   template<typename T>
-  T Max(const T& a, const T& b)
+  T Max(const T& _1, const T& _2)
   {
-    return a > b ? a : b;
+    return numeric<T>::IIfMoreThan(_1, _2);
   };
 
-  SFunctionDoc(Text="Maximum of a, b and c")
+  //! Maximum of three values
   template<typename T>
-  T Max(const T& a, const T& b, const T& c)
+  T Max(const T& _1, const T& _2, const T& _3)
   {
-    return Max(Max(a, b), c);
+    return numeric<T>::IIfMoreThan(_1, numeric<T>::IIfMoreThan(_2, _3));
   };
   
-  SFunctionDoc(Text="Clamp value between minimum and maximum")
+  //! Restrict a value within range of minimum and maximum
   template<typename T>
   T Clamp(const T& value, const T& minimum, const T& maximum)
   {
@@ -610,6 +630,11 @@ namespace Stardrive {
     {
       return _elements;
     }
+    
+    const T* GetData() const
+    {
+      return _elements;
+    }
 
     T& operator[](u32 index)
     {
@@ -661,6 +686,11 @@ namespace Stardrive {
       return _elements;
     }
     
+    const T* GetData() const
+    {
+      return _elements;
+    }
+
     uinteger  GetSize() const 
     { 
       return _count;
@@ -718,6 +748,11 @@ namespace Stardrive {
       return _elements;
     }
     
+    const T* GetData() const
+    {
+      return _elements;
+    }
+
     uinteger GetSize() const
     {
       return TCapacity;
@@ -889,6 +924,13 @@ namespace Stardrive {
 
 namespace Stardrive
 {
+  
+  template<typename T, typename TEvalulator = bool>
+  T IIf(TEvalulator condition, const T& _true, const T& _false)
+  {
+    return ((condition)()) ? _true : _false;
+  }
+
   namespace meta
   {
 
@@ -1018,6 +1060,25 @@ namespace Stardrive
 
 }} // Stardrive::meta
 
+namespace Stardrive
+{
+  namespace mixin
+  {
+    struct NonCopyable
+    {
+      NonCopyable() = default;
+      NonCopyable(const NonCopyable& other) = delete;
+      NonCopyable& operator=(const NonCopyable& other) = delete;
+    };
+
+    struct NonMovabable
+    {
+      NonMovabable() = default;
+      NonMovabable(const NonMovabable&& other) = delete;
+      NonMovabable& operator=(const NonMovabable&& other) = delete;
+    };
+  }
+}
 
 //! Type Hardening
 //! https://github.com/betajaen/Stardrive/blob/master/Documentation/type-hardening.md
@@ -1223,10 +1284,25 @@ namespace Stardrive
     return m.v == -1;
   }
   
-  template<uinteger Cookie>
+  template<uinteger Cookie, uinteger Default = 0>
   struct Opaque
   {
     u64 opaque;
+
+    inline Opaque()
+     : opaque(Default)
+    {
+    }
+
+    inline void SetDefault()
+    {
+      opaque = Default;
+    }
+
+    inline bool IsSet() const
+    {
+      return opaque != Default;
+    }
 
     template<typename T>
     inline void Acquire(const T& value)
@@ -1240,9 +1316,36 @@ namespace Stardrive
       return (T) opaque;
     }
   };
+  
+  template<uinteger Cookie, uinteger Default = 0>
+  struct Hidden : mixin::NonCopyable
+  {
+    Opaque<Cookie, Default> opaque;
+
+    Hidden() = default;
+    Hidden(const Hidden&& op);
+
+    Hidden& operator=(const Hidden&& other);
+
+  };
+
+  template <uinteger Cookie, uinteger Default>
+  Hidden<Cookie, Default>::Hidden(const Hidden&& op)
+  {
+    opaque = op.opaque;
+    op.opaque.SetDefault();
+  }
+
+  template <uinteger Cookie, uinteger Default>
+  Hidden<Cookie, Default>& Hidden<Cookie, Default>::operator=(const Hidden&& other)
+  {
+    opaque = other.opaque;
+    other.opaque.SetDefault();
+    return *this;
+  }
 
   template<typename T>
-  struct FixedVar
+  struct Dummy
   {
     u8 data[sizeof(T)];
     
@@ -1250,6 +1353,13 @@ namespace Stardrive
     {
       memory::Zero(&data[0], sizeof(T));
       new((void*) &data[0]) T();
+    }
+
+    template<typename... TArgs>
+    void New(const TArgs&... constructorArguments)
+    {
+      memory::Zero(&data[0], sizeof(T));
+      new((void*) &data[0]) T(constructorArguments...);
     }
 
     void Delete()
