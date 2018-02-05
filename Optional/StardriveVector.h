@@ -32,6 +32,9 @@ namespace Stardrive
       struct { f32 x, y, z, w;         };
       struct { f32 right, up, forward; };
     };
+    
+    inline f32* Ptr()             { return &m[0]; }
+    inline const f32* Ptr() const { return &m[0]; }
   };
 
   struct Quaternion
@@ -41,6 +44,9 @@ namespace Stardrive
       f32 m[4];
       struct { f32 x, y, z, w; };
     };
+
+    inline f32* Ptr()             { return &m[0]; }
+    inline const f32* Ptr() const { return &m[0]; }
   };
 
   struct Matrix
@@ -51,6 +57,9 @@ namespace Stardrive
       f32 M[4][4];
       struct { Vector rot[3]; Vector pos; };
     };
+
+    inline f32* Ptr()             { return &m[0]; }
+    inline const f32* Ptr() const { return &m[0]; }
   };
 
 }
@@ -261,9 +270,9 @@ namespace Stardrive
     inline Vector Min(const Vector& _1, const Vector& _2)
     {
       return vector::Value(
-        math::Min(_1.x, _2.x),
-        math::Min(_1.y, _2.y),
-        math::Min(_1.z, _2.z)
+        Stardrive::Min(_1.x, _2.x),
+        Stardrive::Min(_1.y, _2.y),
+        Stardrive::Min(_1.z, _2.z)
       );
     }
     inline Vector Min(const Vector& _1, const Vector& _2, const Vector& _3)
@@ -273,9 +282,9 @@ namespace Stardrive
     inline Vector Max(const Vector& _1, const Vector& _2)
     {
       return vector::Value(
-        math::Max(_1.x, _2.x),
-        math::Max(_1.y, _2.y),
-        math::Max(_1.z, _2.z)
+        Stardrive::Max(_1.x, _2.x),
+        Stardrive::Max(_1.y, _2.y),
+        Stardrive::Max(_1.z, _2.z)
       );
     }
     inline Vector Max(const Vector& _1, const Vector& _2, const Vector& _3)
@@ -364,9 +373,9 @@ namespace Stardrive
         v.x * m.rot[0].z + v.y * m.rot[1].z + v.z * m.rot[2].z + m.pos.z
       );
     }
-    inline void Perspective(Matrix& m, f32 fovY, f32 aspect, f32 nearClip, f32 farClip, bool leftHanded = true, bool homogeneousDepth = true)
+    inline void Perspective(Matrix& m, const Radian& fovY, f32 aspect, f32 nearClip, f32 farClip, bool leftHanded = true, bool homogeneousDepth = true)
     {
-      const f32 height = 1.0f / math::Tan(fovY * 0.5f);
+      const f32 height = 1.0f / math::Tan(fovY.Radians() * 0.5f);
       const f32 width  = height * 1.0f/ aspect;
   
       const f32 diff = farClip - nearClip;
