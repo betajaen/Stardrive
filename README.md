@@ -22,7 +22,8 @@ Basics
 
 Containers
 ----------
-* [Arrays](Documentation/array.md)
+* [Arrays](Documentation/Containers/array.md)
+* [Linked Lists](Documentation/Containers/list.md)
 
 Macros and Meta Programming
 ---------------------------
