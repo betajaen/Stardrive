@@ -1091,7 +1091,7 @@ namespace Stardrive
 //!  Either<T1, T2>    -- Either one value or an other but not both -- Either<f32, const char*>::First(3.14f), Either<f32, const char*>::Second("Pi") 
 //!  Tribool           -- True, False or Unknown type
 //!  Opaque<Cookie>    -- Representation of a pointer or handle as an uinteger to hide implementation.
-//!  FixedVar<T>       -- Store of a variable inside itself with delayed New/Delete functions.
+//!  Dummy<T>          -- Store of a variable inside itself with delayed New/Delete functions.
 
 namespace Stardrive
 {
