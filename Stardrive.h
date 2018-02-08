@@ -213,6 +213,23 @@ namespace Stardrive {
   #define SFloat              float
   #define SDouble             double
 
+  #define SUsingCommon              \
+    using ::Stardrive::uinteger;    \
+    using ::Stardrive::integer;     \
+    using ::Stardrive::u8;          \
+    using ::Stardrive::u16;         \
+    using ::Stardrive::u32;         \
+    using ::Stardrive::u64;         \
+    using ::Stardrive::i8;          \
+    using ::Stardrive::i16;         \
+    using ::Stardrive::i32;         \
+    using ::Stardrive::i64;         \
+    using ::Stardrive::f32;         \
+    using ::Stardrive::f64;         \
+    using ::Stardrive::b32;         \
+    using ::Stardrive::Character;   \
+    using ::Stardrive::Character32;  
+
   namespace traits {
       
     template<typename T> 
